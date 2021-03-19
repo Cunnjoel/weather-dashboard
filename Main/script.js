@@ -5,7 +5,8 @@ console.log("hello world");
 $(document).ready(function(){
     var searchhistoryContainer = $("#past-searches");
     var searchBtn = $("#search-btn");
-    var apiKey = "f7c1de4bc14295c86f377a66ad57e67d"
+    var apiKey = "";
+    var baseUrl = ";"
 
     searchBtn.submit(function( event ) {
         event.preventDefault();
