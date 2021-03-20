@@ -1,9 +1,11 @@
 
 $(document).ready(function(){
+    //variables for global usage
     var searchhistoryContainer = $("#past-searches");
     var searchBtn = $("#search-btn");
     var currentWeatherContainer = $("#current-weather")
     var fiveDayForcastContainer = $("#five-day-forcast")
+    var searchValueInput = $("#search-value");
     var apiKey = "";
     var baseUrl = "https://api.openweathermap.org/data/2.5/weather?";
     var baseUrl2 ="https://api.openweathermap.org/data/2.5/forecast?";
@@ -16,7 +18,15 @@ $(document).ready(function(){
         var formValues = $(this).serializeArray();
         var city = formValues[0].value;
         //create element with jquery selector
-        var searchTermDiv = $("<div class='past-search-term'>");
+        var searchTermDiv = $("<button type='button' class='btn past-search-term'>");
+        //recalls previous searchs when clicked
+        searchTermDiv.click(function(event){
+            event.preventDefault();
+            var value = $(this).text();
+            searchForCurrentCityWeather(value);
+            searchForFiveDayForcastWeather(value);
+        })
+        //stores input values in local storage
         searchHistory.push(city);
         localStorage.setItem("searchHistory", JSON.stringify(searchHistory));
         searchTermDiv.text(city);
@@ -25,17 +35,21 @@ $(document).ready(function(){
         //gives value from form
         searchForCurrentCityWeather(city);
         searchForFiveDayForcastWeather(city);
-        
+        searchValueInput.val("");
     });
     function searchForCurrentCityWeather(city){
+        //calls current weather data
+        currentWeatherContainer.html("");
         var fullUrl = baseUrl + "q=" + city + "&appid=" + apiKey;
         console.log(fullUrl);
         fetch(fullUrl)
+        //resceives current weather data
         .then(function (response){
             return response.json();
         })
         .then(function (data){
             console.log(data);
+            //variables used to gather requested data parts
             var cityName = data.name;
             var temp = data.main.temp;
             var humidity = data.main.humidity;
@@ -43,19 +57,19 @@ $(document).ready(function(){
             var iconUrl = iconBaseUrl + weather[0].icon + ".png";
             var wind = data.wind;
             console.log(temp, humidity, weather, wind);
+            //variables used to create elements for data to be displayed
             var cityNameDiv = $("<h3 class='city-name'>");
             var tempDiv = $("<div class='temp-name'>");
             var humidityDiv = $("<div class='humidity-name'>");
             var weatherDiv = $("<img class='icon-name' />");
             var windDiv = $("<div class='wind-name'>");
+            //turns stringified data into text
             cityNameDiv.text(cityName);
             weatherDiv.attr("src", iconUrl);
             tempDiv.text("Temperature: " + temp);
             humidityDiv.text("Humidity: " + humidity + "%");
             windDiv.text("Wind Speed: " + wind.speed + "MPH");
-
-
-            
+            //appends data into document
             currentWeatherContainer.append(cityNameDiv);
             currentWeatherContainer.append(tempDiv);
             currentWeatherContainer.append(humidityDiv);
@@ -64,6 +78,7 @@ $(document).ready(function(){
         });
     }
     function searchForFiveDayForcastWeather(city){
+        fiveDayForcastContainer.html("");
         var forecastUrl = baseUrl2 + "q=" + city + "&appid=" + apiKey;
         fetch(forecastUrl).then(function(responseFromOpenWeatherMapUnProcessed) {
             return responseFromOpenWeatherMapUnProcessed.json()
@@ -104,10 +119,17 @@ $(document).ready(function(){
         })
     }
     function retrieveSearchHistory() {
+        //creates buttone so local storage values can be recalled
         if (localStorage.getItem("searchHistory")){
             searchHistory = JSON.parse(localStorage.getItem("searchHistory"));
             for (var i = 0; i < searchHistory.length; i++) {
-                var searchTermDiv = $("<div class='past-search-term'>");
+                var searchTermDiv = $("<button type='button' class='btn past-search-term'>");
+                searchTermDiv.click(function(event){
+                    event.preventDefault();
+                    var value = $(this).text();
+                    searchForCurrentCityWeather(value);
+                    searchForFiveDayForcastWeather(value);
+                })
                 searchTermDiv.text(searchHistory[i]);
                 searchhistoryContainer.append(searchTermDiv);
             }
